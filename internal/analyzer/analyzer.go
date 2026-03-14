@@ -14,7 +14,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name:     "analyzer",
+	Name:     "selectellinter",
 	Doc:      "проверяет лог-сообщения на соответствие правилам оформления",
 	Run:      run,
 	Requires: []*analysis.Analyzer{inspect.Analyzer},

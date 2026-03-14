@@ -1,0 +1,9 @@
+linters-settings:
+  custom:
+    selectel-linter:
+      path: ./selectel-linter.so
+      original-name: selectellinter
+
+linters:
+  enable:
+    - selectel-linter
