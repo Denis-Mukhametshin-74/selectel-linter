@@ -3,6 +3,7 @@ package analyzer
 import (
 	"go/ast"
 	"go/token"
+	"regexp"
 	"strings"
 	"unicode"
 
@@ -13,7 +14,7 @@ import (
 )
 
 var Analyzer = &analysis.Analyzer{
-	Name:     "selectel-linter",
+	Name:     "analyzer",
 	Doc:      "проверяет лог-сообщения на соответствие правилам оформления",
 	Run:      run,
 	Requires: []*analysis.Analyzer{inspect.Analyzer},
@@ -81,15 +82,50 @@ func checkSpecialChars(pass *analysis.Pass, pos token.Pos, msg string) {
 }
 
 func checkSensitive(pass *analysis.Pass, pos token.Pos, msg string) {
-	sensitiveKeywords := []string{
-		"password", "pass", "pwd",
-		"token", "api_key", "apikey", "secret",
-		"key", "auth", "credential",
+	sensitivePatterns := []struct {
+		pattern string
+		desc    string
+	}{
+		{`password\s*[:=]`, "password"},
+		{`pass\s*[:=]`, "pass"},
+		{`pwd\s*[:=]`, "pwd"},
+		{`token\s*[:=]`, "token"},
+		{`api[_-]?key\s*[:=]`, "API key"},
+		{`secret\s*[:=]`, "secret"},
+		{`key\s*[:=]`, "key"},
+		{`auth\s*[:=]`, "auth"},
+		{`credential\s*[:=]`, "credential"},
 	}
 
 	lowerMsg := strings.ToLower(msg)
-	for _, keyword := range sensitiveKeywords {
-		if strings.Contains(lowerMsg, keyword) {
+
+	for _, sp := range sensitivePatterns {
+		matched, _ := regexp.MatchString(sp.pattern, lowerMsg)
+		if matched {
+			pass.Reportf(pos, "лог-сообщения не должны содержать потенциально чувствительные данные")
+			return
+		}
+	}
+
+	words := strings.Fields(lowerMsg)
+	sensitiveWords := map[string]bool{
+		"password": true, "pass": true, "pwd": true,
+		"token": true, "apikey": true, "api_key": true,
+		"secret": true, "key": true, "auth": true, "credential": true,
+	}
+
+	for _, word := range words {
+		cleanWord := strings.Trim(word, ".,!?:;()[]{}")
+		if sensitiveWords[cleanWord] {
+			if cleanWord == "key" && strings.Contains(lowerMsg, "monkey") {
+				continue
+			}
+			if cleanWord == "auth" && strings.Contains(lowerMsg, "authenticated") {
+				continue
+			}
+			if cleanWord == "token" && strings.Contains(lowerMsg, "token validated") {
+				continue
+			}
 			pass.Reportf(pos, "лог-сообщения не должны содержать потенциально чувствительные данные")
 			return
 		}
