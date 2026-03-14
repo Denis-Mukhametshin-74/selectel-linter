@@ -1,9 +1,9 @@
-linters-settings:
-  custom:
-    selectel-linter:
-      path: ./selectel-linter.so
-      original-name: selectellinter
-
+version: "2"
 linters:
   enable:
     - selectel-linter
+  settings:
+    custom:
+      selectel-linter:
+        path: ./selectel-linter.exe
+        original-name: selectellinter

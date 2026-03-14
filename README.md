@@ -34,7 +34,7 @@ go build -o selectel-linter.exe ./cmd/selectel-linter
 
 ## 3. Интеграция с golangci-lint
 
-### 3.1 Сборка плагина
+### 3.1 Сборка плагина (на Linux/macOS)
 
 ```bash
 cd selectel-linter
@@ -46,28 +46,28 @@ go build -buildmode=plugin -o selectel-linter.so ./pkg/golangci
 Создайте файл `.golangci.yml` в корне вашего проекта:
 
 ```yaml
-linters-settings:
-  custom:
-    selectel-linter:
-      path: /полный/путь/к/selectel-linter.so
-      original-name: selectellinter
-
+version: "2"
 linters:
   enable:
     - selectel-linter
+  settings:
+    custom:
+      selectel-linter:
+        path: /полный/путь/к/selectel-linter.so
+        original-name: selectellinter
 ```
 
 ### 3.3 Запуск golangci-lint
 
 ```bash
 # Запуск только нашего линтера
-golangci-lint run --disable-all --enable=selectel-linter ./...
+golangci-lint run --enable=selectel-linter ./...
 
 # Запуск со всеми линтерами
 golangci-lint run
 ```
 
-## 4. Проверка работоспособности
+## 4. Проверка работоспособности (на Windows)
 
 Создайте тестовый файл `test.go`:
 
